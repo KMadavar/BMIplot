@@ -13,8 +13,17 @@ library(DT)
 library(bslib)
 #Define UI
 
-ui <- fluidPage( 
-  titlePanel("BMI Calculator"), 
+# adsl <- tidyCDISC::adsl
+# saveRDS(adsl, file = "C:/Users/karth/OneDrive/Desktop/R Practice/BMIplot/data/adsl.rds")
+# save(adsl, file = "C:/Users/karth/OneDrive/Desktop/R Practice/BMIplot/data/adsl.RData")
+# getwd()
+# 
+# load(file = "C:/Users/karth/OneDrive/Desktop/R Practice/BMIplot/data/adsl.RData")
+# adsl <- readRDS(file = "C:/Users/karth/OneDrive/Desktop/R Practice/BMIplot/data/adsl.rds")
+
+ui <- page_navbar( 
+  nav_panel("BMI Calculator",
+
   sidebarLayout( 
     sidebarPanel( 
       #selectInput("weight", "Select Weight (kg):", choices = seq(40, 150, by = 1)), 
@@ -35,7 +44,7 @@ ui <- fluidPage(
       ),
       actionButton('submit', 'Submit the data')
     ),
-    card( tags$h1('Bar Chart of BMI'),
+    mainPanel( tags$h1('Bar Chart of BMI'),
           tags$br(),
           plotOutput("bmiPlot"), 
           tags$br(),
@@ -51,6 +60,28 @@ ui <- fluidPage(
     )
   )
   
+),
+
+nav_panel("BMI from ADSL data",
+          
+          sidebarLayout( 
+            sidebarPanel( 
+            
+                fileInput("file1", "Choose R file", accept = c(".rds", ".RData")),
+            ),
+                mainPanel(
+                  plotOutput("dataPlot"), 
+                  tags$br(),
+                  tags$br(),
+                  dataTableOutput("contents")
+                )
+              )
+          
+          
+),
+
+title = "Applications", 
+id = "page",
 )
 
 #Define server logic
@@ -83,6 +114,29 @@ server <- function(input, output) {
   output$table <- 
     renderDataTable({datatable(bmidf())
     }) %>% bindEvent(input$submit)
+  
+  
+  database <- reactive({
+    file <- input$file1
+    # print(file)
+    
+    ext <- tools::file_ext(file$datapath)
+    validate(need(ext == "rds", "Please upload a csv file"))
+    
+    readRDS(file$datapath)
+  })
+  
+  
+  output$dataPlot <- renderPlot({
+    ggplot2::ggplot(database(), aes(x=HEIGHTBL, y=WEIGHTBL))+
+      geom_point()
+  })
+  
+  output$contents <- renderDataTable({
+    database()
+    
+  })
+  
 }
 
 #Run the application
