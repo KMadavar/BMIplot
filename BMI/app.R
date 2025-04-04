@@ -44,17 +44,21 @@ ui <- page_navbar(
       ),
       actionButton('submit', 'Submit the data')
     ),
-    mainPanel( tags$h1('Bar Chart of BMI'),
+    mainPanel( 
+          #tags$h1('Bar Chart of BMI'),
+          tags$h1(textOutput("mtitle")),
           tags$br(),
           plotOutput("bmiPlot"), 
           tags$br(),
           tags$br(),
-          tags$h2('BMI Calculated Value'),
+        
+          tags$h2(textOutput('ptitle')),
           tags$br(),
           verbatimTextOutput("bmiValue"), 
           tags$br(),
           tags$br(),
-          tags$h3('Table of height, weight, BMI'),
+          #tags$h3('Table of height, weight, BMI'),
+          tags$h3(textOutput("ltitle")),
           tags$br(),
           dataTableOutput("table") 
     )
@@ -87,6 +91,7 @@ id = "page",
 #Define server logic
 
 server <- function(input, output) { 
+  # browser()
   bmi <- reactive({ weight <- input$weight
   height <- input$height / 100
   # Convert cm to meters
@@ -116,6 +121,18 @@ server <- function(input, output) {
     }) %>% bindEvent(input$submit)
   
   
+  output$ptitle <- renderText({
+    'BMI Calculated Value'
+  }) %>% bindEvent(input$submit)
+
+  output$mtitle <- renderText({
+    "Bar Chart of BMI"
+  }) %>% bindEvent(input$submit)
+  
+  output$ltitle <- renderText({
+    'Table of height, weight, BMI'
+  }) %>% bindEvent(input$submit)
+
   database <- reactive({
     file <- input$file1
     # print(file)
